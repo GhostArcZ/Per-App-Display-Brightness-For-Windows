@@ -50,5 +50,5 @@ class CustomBrightness:
         return process.name()
 
 if __name__ == "__main__":
-    customBrightnessObj = CustomBrightness()
-    customBrightnessObj.run()
+    customBrightness = CustomBrightness()
+    customBrightness.run()
