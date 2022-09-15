@@ -1,3 +1,4 @@
+import sys
 import win32gui
 import win32process
 import psutil
@@ -11,29 +12,45 @@ FULL_BRIGHTNESS = 100 # Set your full brightness here
 SLEEP_TIME = 1 # Set the sleep time here
 defaultBrightnessIsSet = True 
 
-if __name__ == "__main__":
-    while True:
-        try:
-            window = win32gui.GetForegroundWindow()
-            pid = win32process.GetWindowThreadProcessId(window)[1]
-            process = psutil.Process(pid)
-            if process.name() in fullBrightnessApps:
-                if defaultBrightnessIsSet:
-                    defaultBrightness = sbc.get_brightness()[0]
-                    sbc.set_brightness(FULL_BRIGHTNESS)
-                    defaultBrightnessIsSet = False
-                    # Logging to console the brightness value and the app name
-                    logging.warning("Brightness set to " + str(FULL_BRIGHTNESS) + " for " + process.name())
-            else:
-                if not defaultBrightnessIsSet:
-                    sbc.set_brightness(defaultBrightness)
-                    defaultBrightnessIsSet = True
-                    # Logging to console the brightness value and the app name
-                    logging.warning("Brightness set to " + str(defaultBrightness) + " for " + process.name())
+class CustomBrightness:
+    def __init__(self):
+        self.defaultBrightness = sbc.get_brightness()[0] # Get the default brightness
+        self.defaultBrightnessIsSet = True
 
-        except Exception as e:
-            logging.error(e)
-        time.sleep(SLEEP_TIME)
-        
-        
-        
+    def run(self):
+        while True:
+            try:
+                if self.get_process() in fullBrightnessApps:
+                    if self.defaultBrightnessIsSet:
+                        time.sleep(SLEEP_TIME)
+                        if self.get_process() in fullBrightnessApps:
+                            self.defaultBrightness = sbc.get_brightness()[0]
+                            sbc.set_brightness(FULL_BRIGHTNESS)
+                            self.defaultBrightnessIsSet = False
+                            # Logging the brightness value and the app name
+                            logging.warning("Brightness set to " + str(FULL_BRIGHTNESS) + " for " + self.get_process())
+                    else:
+                        pass
+                else:
+                    if not self.defaultBrightnessIsSet:
+                        time.sleep(SLEEP_TIME)
+                        if self.get_process() not in fullBrightnessApps:
+                            sbc.set_brightness(self.defaultBrightness)
+                            self.defaultBrightnessIsSet = True
+                            # Logging the brightness value and the app name
+                            logging.warning("Brightness set to " + str(self.defaultBrightness) + " for " + self.get_process())
+
+            except Exception as e:
+                logging.error(e)
+                # Print the line number where the error occurred
+                print("Error on line {}".format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+            time.sleep(0.2)
+    def get_process(self):
+        window = win32gui.GetForegroundWindow()
+        pid = win32process.GetWindowThreadProcessId(window)[1]
+        process = psutil.Process(pid)
+        return process.name()
+
+if __name__ == "__main__":
+    customBrightnessObj = CustomBrightness()
+    customBrightnessObj.run()
