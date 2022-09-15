@@ -42,8 +42,6 @@ class CustomBrightness:
 
             except Exception as e:
                 logging.error(e)
-                # Print the line number where the error occurred
-                print("Error on line {}".format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
             time.sleep(0.2)
     def get_process(self):
         window = win32gui.GetForegroundWindow()
